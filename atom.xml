@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://mrwangyuan.github.io</id>
-    <title>Clown</title>
-    <updated>2020-04-07T13:08:25.977Z</updated>
+    <title>Clown&apos;s Blog</title>
+    <updated>2020-04-07T14:09:25.065Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://mrwangyuan.github.io"/>
     <link rel="self" href="https://mrwangyuan.github.io/atom.xml"/>
-    <subtitle>温故而知新</subtitle>
+    <subtitle>踏遍山河,人间值得</subtitle>
     <logo>https://mrwangyuan.github.io/images/avatar.png</logo>
     <icon>https://mrwangyuan.github.io/favicon.ico</icon>
-    <rights>All rights reserved 2020, Clown</rights>
+    <rights>All rights reserved 2020, Clown&apos;s Blog</rights>
     <entry>
         <title type="html"><![CDATA[mysql索引结构]]></title>
         <id>https://mrwangyuan.github.io/post/mysql-suo-yin-jie-gou/</id>
