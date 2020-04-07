@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://mrwangyuan.github.io</id>
     <title>Clown&apos;s Blog</title>
-    <updated>2020-04-07T14:09:25.065Z</updated>
+    <updated>2020-04-07T15:57:39.605Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://mrwangyuan.github.io"/>
     <link rel="self" href="https://mrwangyuan.github.io/atom.xml"/>
@@ -16,45 +16,9 @@
         <link href="https://mrwangyuan.github.io/post/mysql-suo-yin-jie-gou/">
         </link>
         <updated>2020-04-07T10:16:04.000Z</updated>
-        <content type="html"><![CDATA[<h2 id="索引是什么">索引是什么</h2>
-<p>索引是帮助MySQL高效获取数据的<strong>排好序</strong>的<strong>数据结构</strong>，也就是说索引是将MySQL表中的数据按照索引的数据结构排好序了，以便于用户高效的获取数据，这也就是一般在查询效率很慢的时候，第一反应都是加索引。</p>
-<h2 id="哪些数据结构可以作为索引的底层实现">哪些数据结构可以作为索引的底层实现</h2>
-<h3 id="1-二叉搜索树">1、二叉搜索树</h3>
-<ul>
-<li>二叉树的构建是左侧比父节点小，右侧比父节点大，那么固然是可以用来存储数据，但是他的缺点是，当建立索引的字段是一个自增的主键时，那么树结构就是一条链表，搜索效率就会变的很低。而且树的高度也不容易控制<br>
-<img src="https://mrwangyuan.github.io/post-images/1586256669138.jpg" alt="" loading="lazy"></li>
-</ul>
-<h3 id="2-红黑树">2、红黑树</h3>
-<ul>
-<li>红黑树也被称为二叉搜索树，解决了单侧数据不平衡的问题，但是依旧没有解决数据量过多的时候，高度不可控制的问题，在数据库的查询效率上来说，尽量减少IO的次数就意味着查询的效率越高，一个系统的性能瓶颈往往都是出现在IO操作上。</li>
-</ul>
-<h3 id="3-hash表">3、hash表</h3>
-<ul>
-<li>Hash表运用散列算法将数据的索引字段进行hash算出一个地址存储在磁盘上，每当查询数据的时候算出hash值，就可以直接去磁盘上查找，效率非常高。仅需一次读写就可以查询到数据，看起来似乎满足索引的结构，实际上MySQL也确实是可以使用hash作为索引的存储。<br>
-<img src="https://mrwangyuan.github.io/post-images/1586257371653.jpg" alt="" loading="lazy"><br>
-但是hash的使用只在以个很小的部分，他只限于查询条件确定的情况下，也就是等值查询比如<br>
-<code>select * from id=4 ；</code><br>
-那么对于范围查找hash就不适合了。比如“&gt;”,&quot;&lt;&quot;之类的查询就不适用了
-<h3 id="4-b-tree">4、B-Tree</h3>
-</li>
-</ul>
-<figure data-type="image" tabindex="1"><img src="https://mrwangyuan.github.io/post-images/1586258102067.jpg" alt="" loading="lazy"></figure>
-<ul>
-<li>B-Tree的结构有一个阶数的概念，M阶B-Tree可以理解为，有M个分支的树结构，图中的结构就是一个3阶的树，也就是每个节点有三个叶子节点。</li>
-<li>B-Tree的也相当于是红黑树的一个改造，既然红黑树一个节点只能存放一个数据，那么一个节点如果存放多个数据那么树的高度是否就是可控的。但是MySQL的内部并不是使用BTree实现的索引结构，因为BTree的数据是存储在每个节点上的，白色的部分是指向下一个节点的指针，在MySQL中数据都是存放在磁盘中的，MySQL为了提高读取效率，每次从磁盘读取数据规定是16KB；<br>
-<code>SHOW GLOBAL STATUS like 'Innodb_page_size'</code><br>
-<code>Innodb_page_size：16384</code><br>
-如果一个表中的一条数据非常大加上指针的大小，一定程度上来说高度同样是不可控的，因为BTree的数据都是存放在每个节点上的。</li>
-</ul>
-<h3 id="btree">B+Tree</h3>
-<p><img src="https://mrwangyuan.github.io/post-images/1586260129691.jpg" alt="" loading="lazy"><br>
-B+Tree是B树的一个改造，和B树的区别是：</p>
-<ul>
-<li>1、他的每个非叶子节点不存放数据，这样依赖每层都可以放更多的数据</li>
-<li>2、叶子节点包含所有的索引字段</li>
-<li>3、每个叶子节点用指针连接，这样就解决了区间访问的问题<br>
-那么一个这样一颗树可以存放多少数据，假设树的高度是3，中间白色的指针MySQL规定是<strong>6Byte</strong>，假设索引字段是bigint类型占8Byte，也就是说一个大节点是14Byte。叶子节点加上存放数据的大小假设是1KB，那么存满的数据就是：<code>(16 *1024/14)^2*16=21902400</code>；也就是多一个高度为三的B+Tree可以存放两千多万的数据，也就是说MySQL查找任何一条数据都是只需要三次读取就可以找到。一般来说第一层的节点数据都是存放在内存中的。所以实际上两次磁盘读取就可以找到数据</li>
-</ul>
+        <summary type="html"><![CDATA[<p><em>mysql的为什么支持千万级别的数据？它的索引是底层是如何实现的</em></p>
+]]></summary>
+        <content type="html"><![CDATA[<p><em>mysql的为什么支持千万级别的数据？它的索引是底层是如何实现的</em></p>
 ]]></content>
     </entry>
 </feed>
