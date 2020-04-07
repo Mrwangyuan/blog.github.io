@@ -3,7 +3,7 @@
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>mysql索引结构 | Gridea</title>
-<link rel="shortcut icon" href="https://mrwangyuan.github.io/favicon.ico?v=1586255293200">
+<link rel="shortcut icon" href="https://mrwangyuan.github.io/favicon.ico?v=1586256676402">
 <link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
 <link rel="stylesheet" href="https://mrwangyuan.github.io/styles/main.css">
 <link rel="alternate" type="application/atom+xml" title="mysql索引结构 | Gridea - Atom Feed" href="https://mrwangyuan.github.io/atom.xml">
@@ -11,9 +11,9 @@
 
 
 
-    <meta name="description" content="##索引是什么
+    <meta name="description" content="索引是什么
 索引是帮助MySQL高效获取数据的排好序的数据结构，也就是说索引是将MySQL表中的数据按照索引的数据结构排好序了，以便于用户高效的获取数据，这也就是一般在查询效率很慢的时候，第一反应都是加索引。
-..." />
+#那些数据结构可以作为索引的底..." />
     <meta name="keywords" content="MySQL" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
     <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
@@ -23,7 +23,7 @@
       <div class="main-content">
         <div class="site-header">
   <a href="https://mrwangyuan.github.io">
-  <img class="avatar" src="https://mrwangyuan.github.io/images/avatar.png?v=1586255293200" alt="">
+  <img class="avatar" src="https://mrwangyuan.github.io/images/avatar.png?v=1586256676402" alt="">
   </a>
   <h1 class="site-title">
     Gridea
@@ -94,12 +94,22 @@
             
             <div class="post-content-wrapper">
               <div class="post-content">
-                <p>##索引是什么<br>
-索引是帮助MySQL高效获取数据的<strong>排好序</strong>的<strong>数据结构</strong>，也就是说索引是将MySQL表中的数据按照索引的数据结构排好序了，以便于用户高效的获取数据，这也就是一般在查询效率很慢的时候，第一反应都是加索引。</p>
+                <h1 id="索引是什么">索引是什么</h1>
+<p>索引是帮助MySQL高效获取数据的<strong>排好序</strong>的<strong>数据结构</strong>，也就是说索引是将MySQL表中的数据按照索引的数据结构排好序了，以便于用户高效的获取数据，这也就是一般在查询效率很慢的时候，第一反应都是加索引。<br>
+#那些数据结构可以作为索引的底层实现<br>
+1、二叉搜索树<br>
+二叉树的构建是左侧比父节点小，右侧比父节点大，那么固然是可以用来存储数据，但是他的缺点是，当建立索引的字段是一个自增的主键时，那么树结构就是一条链表，搜索效率就会变的很低。而且树的高度也不容易控制<br>
+<img src="https://mrwangyuan.github.io/post-images/1586256669138.jpg" alt="" loading="lazy"><br>
+2、红黑树<br>
+3、hash表<br>
+4、B-Tree</p>
 
               </div>
               <div class="toc-container">
-                
+                <ul class="markdownIt-TOC">
+<li><a href="#%E7%B4%A2%E5%BC%95%E6%98%AF%E4%BB%80%E4%B9%88">索引是什么</a></li>
+</ul>
+
               </div>
             </div>
           </article>

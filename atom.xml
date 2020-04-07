@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://mrwangyuan.github.io</id>
     <title>Gridea</title>
-    <updated>2020-04-07T10:28:21.587Z</updated>
+    <updated>2020-04-07T10:51:23.256Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://mrwangyuan.github.io"/>
     <link rel="self" href="https://mrwangyuan.github.io/atom.xml"/>
@@ -16,8 +16,15 @@
         <link href="https://mrwangyuan.github.io/post/mysql-suo-yin-jie-gou/">
         </link>
         <updated>2020-04-07T10:16:04.000Z</updated>
-        <content type="html"><![CDATA[<p>##索引是什么<br>
-索引是帮助MySQL高效获取数据的<strong>排好序</strong>的<strong>数据结构</strong>，也就是说索引是将MySQL表中的数据按照索引的数据结构排好序了，以便于用户高效的获取数据，这也就是一般在查询效率很慢的时候，第一反应都是加索引。</p>
+        <content type="html"><![CDATA[<h1 id="索引是什么">索引是什么</h1>
+<p>索引是帮助MySQL高效获取数据的<strong>排好序</strong>的<strong>数据结构</strong>，也就是说索引是将MySQL表中的数据按照索引的数据结构排好序了，以便于用户高效的获取数据，这也就是一般在查询效率很慢的时候，第一反应都是加索引。<br>
+#那些数据结构可以作为索引的底层实现<br>
+1、二叉搜索树<br>
+二叉树的构建是左侧比父节点小，右侧比父节点大，那么固然是可以用来存储数据，但是他的缺点是，当建立索引的字段是一个自增的主键时，那么树结构就是一条链表，搜索效率就会变的很低。而且树的高度也不容易控制<br>
+<img src="https://mrwangyuan.github.io/post-images/1586256669138.jpg" alt="" loading="lazy"><br>
+2、红黑树<br>
+3、hash表<br>
+4、B-Tree</p>
 ]]></content>
     </entry>
 </feed>
