@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta content="yes" name="apple-mobile-web-app-capable" />
+  <meta content="black" name="apple-mobile-web-app-status-bar-style" />
+  <meta name="referrer" content="never">
+  <meta name="keywords" content="">
+  <meta name="description" content="">
+  <meta name="author" content="kveln">
+  <title>MySQL的事务隔离级别 | Clown&#39;s Blog</title>
+  <link href="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+  <!-- <link href="https://mrwangyuan.github.io/media/css/bootstrap.min.css" rel="stylesheet"> -->
+  <!--  <link href="https://mrwangyuan.github.io/media/css/all.min.css" rel="stylesheet" type="text/css"> -->
+  <link href="https://cdn.bootcss.com/font-awesome/5.11.2/css/all.min.css" rel="stylesheet">
+  <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+  <link rel="alternate" type="application/rss+xml" title="MySQL的事务隔离级别 | Clown&#39;s Blog » Feed" href="https://mrwangyuan.github.io/atom.xml">
+  <link rel="stylesheet"href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.15.10/build/styles/androidstudio.min.css">
+  <link href="https://mrwangyuan.github.io/styles/main.css" rel="stylesheet">
+  <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.15.10/build/highlight.min.js"></script>
+  <!-- <script src="https://mrwangyuan.github.io/media/scripts/jquery.min.js"></script> -->
+  <script>hljs.initHighlightingOnLoad();</script>
+  
+
+    <meta property="og:description" content="MySQL的事务隔离级别"/>
+    <meta property="og:url" content="https://mrwangyuan.github.io/post/mysql-de-shi-wu-ge-chi-ji-bie/"/>
+    <meta property="og:locale" content="zh-CN"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:site_name" content="Clown&#39;s Blog"/>
+  </head>
+  <body>
+  	<!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-light fixed-top" id="mainNav">
+    <div class="container">
+      <a class="navbar-brand" href="https://mrwangyuan.github.io">Clown&#39;s Blog</a>
+      <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        Menu
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ml-auto">
+          
+          <li class="nav-item">
+              
+              <a class="nav-link" href="https://mrwangyuan.github.io">首页</a>
+              
+          </li>
+          
+          <li class="nav-item">
+              
+              <a class="nav-link" href="https://mrwangyuan.github.io/archives">归档</a>
+              
+          </li>
+          
+          <li class="nav-item">
+              
+              <a class="nav-link" href="https://mrwangyuan.github.io/tags">标签</a>
+              
+          </li>
+          
+          <li class="nav-item">
+              
+              <a class="nav-link" href="https://mrwangyuan.github.io/post/about">关于</a>
+              
+          </li>
+          
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <!-- Page Header -->
+  <header class="masthead" style="background-image: url('https://mrwangyuan.github.io/media/images/home-bg.jpg')">
+    <div class="overlay"></div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <div class="post-heading">
+          	<span class="tags">
+          	 
+        </span>
+            <h1>MySQL的事务隔离级别</h1>
+            <span class="meta">
+            	Posted on
+              2020-04-08，6 min read
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Post Content -->
+  <article>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <p>在并发场景下保证数据的一致性是很重要的一个难点，MySQL是如何保证数据的一致性？</p>
+<!-- more -->
+<h2 id="mysql中锁的类型">MySQL中锁的类型</h2>
+<h3 id="表锁">表锁</h3>
+<p>顾名思义，也就是每次对一张表进行操作的时候会锁住整张表，这样加锁的速度更快，但是加锁的粒度太大，发生锁冲突的概率回很高，所以表锁的并发效率不高</p>
+<ul>
+<li><strong>如何给表加锁以及差查那些表已经被上锁：</strong><br>
+<code>lock table 表名称 read(write),表名称2 read(write)--加锁</code><br>
+<code>unlock tables; --解锁</code><br>
+<code>show open tables; --查看被加锁的表</code></li>
+<li><strong>表锁的特性：</strong>
+<ul>
+<li>如果加的是读锁，那么会阻塞其他事务的更新、插入操作，但是不会阻塞读取</li>
+<li>如果加的是写锁，无论什么操作都是会阻塞，直到另一个事务解锁，才会执行后面的事务语句<br>
+很重要的一点是 <strong>MyISAM存储引擎</strong> 在执行查询语句的时候会自动给涉及到的表加读锁，增删改操作会给表加写锁。</li>
+</ul>
+</li>
+</ul>
+<h3 id="行锁">行锁</h3>
+<p>行锁就是锁住表中某一行数据，相比于表锁他的开销大，效率也稍微弱一点，但是锁的粒度小，相对的并发度也很高<br>
+<em>InnoDB和MyISAM存储引擎最大的区别就是：InnoDB支持行锁和事务，这两点MyISAM是没有的。</em></p>
+<ul>
+<li>
+<p><strong>行锁的事务以及事务属性</strong>：<br>
+这里先说ACID事务属性：事务是由一组SQL组成的逻辑处理单元，具有一下四个属性。</p>
+<ol>
+<li>原子性（Atomicity）<br>
+也就是在一个事务中的一组SQL语句要一起执行完或者都失败，它们是一个整体，强调动作</li>
+<li>一致性（Consistent）<br>
+在事务开始和完成时,数据都必须保持一致状态。这意味着所有相关的数据规则都必须应用于事务的修改,以保持数据的完整性;事务结束时,所有的内部数据结构(如B树索引或双向链表)也都必须是正确的，强调动作之后的结果</li>
+<li>隔离性(Isolation)<br>
+数据库系统提供一定的隔离机制,保证事务在不受外部并发操作影响的“独立”环境执行。这意味着事务处理过程中的中间状态对外部是不可见的。简单说每个事务都是不能被其他事务影响。</li>
+<li>持久性(Durable)<br>
+事务完成之后,它对于数据的修改是永久性的,即使出现系统故障也能够保持</li>
+</ol>
+<h3 id="那么在并发场景下会出现那些事务问题">那么在并发场景下会出现那些事务问题</h3>
+<ol>
+<li>更新丢失<br>
+在两个事务A、B读取数据库的时候，都读取到初始值，A事务先更新，B事务后更新，这时候B事务就会将A事务更新的结果覆盖掉</li>
+<li>脏读<br>
+同样是两个事务,A事务在对数据做更新的时候并<strong>未提交</strong>数据，这时候B事务读取到了A未提交的数据，这种情况下一旦事务A回滚事务，那么B事务的数据就变成了脏数据。</li>
+<li>不可重读<br>
+A事务在读取数据后的某个时间，重新读取了这条数据，但是这条数据已经被其他数据修改了，但是这时候A事务还没结束，这就不符合事务的隔离性，这就是不可重读的问题，简单说就是读取到了其他事务<strong>已经提交的更新操作</strong></li>
+<li>幻读<br>
+一个事务使用一条查询语句重新查询时发现两次的结果不一致，因为其他事务在这个条件中插入了数据， 也就是说事务A读取到了事务B<strong>提交的新增数据</strong>，同样也是不符合隔离性<br>
+<img src="https://mrwangyuan.github.io/post-images/1586313197975.png" alt="" loading="lazy"></li>
+</ol>
+</li>
+</ul>
+<h3 id="mysql的事务隔离级别">MySQL的事务隔离级别</h3>
+<table>
+<thead>
+<tr>
+<th>事务隔离级别</th>
+<th style="text-align:center">脏读</th>
+<th style="text-align:right">不可重读</th>
+<th style="text-align:left">幻读</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>读未提交(read-uncommitted)</td>
+<td style="text-align:center">可能</td>
+<td style="text-align:right">可能</td>
+<td style="text-align:left">可能</td>
+</tr>
+<tr>
+<td>读已提交(read-committed)</td>
+<td style="text-align:center">不可能</td>
+<td style="text-align:right">可能</td>
+<td style="text-align:left">可能</td>
+</tr>
+<tr>
+<td>可重读(repeatable-read)</td>
+<td style="text-align:center">不可能</td>
+<td style="text-align:right">不可能</td>
+<td style="text-align:left">可能</td>
+</tr>
+<tr>
+<td>串行化(serializable)</td>
+<td style="text-align:center">不可能</td>
+<td style="text-align:right">不可能</td>
+<td style="text-align:left">不可能</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>表中横排是可能出现的事务问题，竖排是MySQL存在是隔离级别，因为对于重读的问题，最大只能支持到已提交的更新，也就是说：可重读的事务隔离级别下是不会出现读取到其他事务中已经提交<strong>更新</strong>的数据。因为幻读是一个特殊的情况 他是已提交的插入操作，只有串行化才能解决，但是一旦用了串行话MySQLl的性能就相对没有可重读那样高。综合考虑一般情况下都是使用可重读的事务隔离级别<br>
+<code>查看当前数据库的事务隔离级别: show variables like 'tx_isolation';</code><br>
+<code>设置事务隔离级别：set tx_isolation='REPEATABLE-READ';</code></li>
+</ul>
+<h3 id="可重复读的mvcc机制">可重复读的MVCC机制</h3>
+<p>大多数场景下都是使用可重复读的级别，它也是MySQL默认是事务隔离级别，那么他又是如何实现的。<br>
+可重复读之所以能够每次读取数据都是保证一致性是因为MySQL内部有一个MVCC(multi-version concurrency control)机制。是因为每次在select的时候都是查询的mysql的版本快照,一旦在当前事务中使用了insert、update、delete就会更新版本快照。</p>
+<ol>
+<li>可重读的验证</li>
+</ol>
+<figure data-type="image" tabindex="1"><img src="https://mrwangyuan.github.io/post-images/1586315230855.jpg" alt="" loading="lazy"></figure>
+<ul>
+<li>
+<p>开启事务<code>START TRANSACTION</code>，并查询当前表中数据</p>
+<figure data-type="image" tabindex="2"><img src="https://mrwangyuan.github.io/post-images/1586315794429.jpg" alt="" loading="lazy"></figure>
+</li>
+<li>
+<p>打开另一个客户端开启事务,更新表并提交：<br>
+<code>update account set balance = balance - 50where id = 2</code></p>
+<figure data-type="image" tabindex="3"><img src="https://mrwangyuan.github.io/post-images/1586316119392.jpg" alt="" loading="lazy"></figure>
+<ul>
+<li>客户端B已经查询到更新后的数据是：850<br>
+<img src="https://mrwangyuan.github.io/post-images/1586316273902.jpg" alt="" loading="lazy"></li>
+</ul>
+</li>
+<li>
+<p>这是客户端B的数据已经更新，但是客户端A再次查询是没有查询到更新后的数据<br>
+<img src="https://mrwangyuan.github.io/post-images/1586316232687.jpg" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>那么这时候在客户端A操作更新语句会是什么情况？是850吗？<br>
+<code>update account set balance = balance - 50 where id = 2</code>，<br>
+<img src="https://mrwangyuan.github.io/post-images/1586316454081.jpg" alt="" loading="lazy"></p>
+</li>
+</ul>
+<p>按照实际操作来看，在更新的时候没有变成900-50 = 850，而是读取到了事务B已经提交的结果。这样数据一致性的机制没有被破坏。<br>
+这就是MySQL的MVCC机制。在更新的时候刷新快照保证事务的一致性。</p>
+
+          
+          <p class="next-post">下一篇：
+            <a href="https://mrwangyuan.github.io/post/mysql-suo-yin-jie-gou/">
+              <span class="post-title">
+                mysql索引结构&rarr;
+              </span>
+            </a>
+          </p>
+        
+        <div class="comment">
+          
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<div id="gitalk-container"></div>
+<script>
+  var gitalk = new Gitalk({
+    clientID: 'bbc0009a52ef9e5cf739',
+    clientSecret: 'c5269127c1f58bbdd0886cb72f3feb6f826636b8',
+    repo: 'mrwangyuan.github.io',
+    owner: 'mrwangyuan',
+    admin: ['mrwangyuan'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+  gitalk.render('gitalk-container')
+</script>
+
+          
+          
+        
+        </div>
+      </div>
+    </div>
+  </article>
+ <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-10 mx-auto">
+          <ul class="list-inline text-center">
+            
+            
+              
+            
+              
+            
+              
+            
+              
+            
+              
+            
+              
+            
+              
+              <li class="list-inline-item">
+              <a href="https://mrwangyuan.github.io/atom.xml" target="_blank">
+                <span class="fa-stack fa-lg">
+                  <i class="fas fa-circle fa-stack-2x"></i>
+                  <i class="fas fa-rss fa-stack-1x fa-inverse"></i>
+                </span>
+              </a>
+              </li>
+          </ul>
+          <p class="copyright text-muted">Copyright &copy;<span>Clown&#39;s Blog</span><br><a href="https://github.com/getgridea/gridea" class="Themeinfo">Powered by Gridea</a></p>
+        </div>
+      </div>
+    </div>
+   </footer>
+  <!-- Bootstrap core JavaScript -->
+  <script src="https://cdn.bootcss.com/twitter-bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+  <!-- <script src="https://mrwangyuan.github.io/media/scripts/bootstrap.bundle.min.js"></script> -->
+  <!-- Bootstrap core JavaScript -->
+  <script src="https://cdn.jsdelivr.net/gh/Alanrk/clean-cdn@1.0/scripts/clean-blog.min.js"></script>
+  <!-- <script src="https://mrwangyuan.github.io/media/scripts/clean-blog.min.js"></script> -->
+  <script src="//instant.page/3.0.0" type="module" defer integrity="sha384-OeDn4XE77tdHo8pGtE1apMPmAipjoxUQ++eeJa6EtJCfHlvijigWiJpD7VDPWXV1"></script>
+  <style type="text/css">a.back_to_top{text-decoration:none;position:fixed;bottom:40px;right:30px;background:#f0f0f0;height:40px;width:40px;border-radius:50%;line-height:36px;font-size:18px;text-align:center;transition-duration:.5s;transition-propety:background-color;display:none}a.back_to_top span{color:#888}a.back_to_top:hover{cursor:pointer;background:#dfdfdf}a.back_to_top:hover span{color:#555}@media print,screen and(max-width:580px){.back_to_top{display:none!important}}</style>
+<a id="back_to_top" href="#" class="back_to_top">
+  <span>▲</span></a>
+<script>$(document).ready((function(_this) {
+    return function() {
+      var bt;
+      bt = $('#back_to_top');
+      if ($(document).width() > 480) {
+        $(window).scroll(function() {
+          var st;
+          st = $(window).scrollTop();
+          if (st > 30) {
+            return bt.css('display', 'block')
+          } else {
+            return bt.css('display', 'none')
+          }
+        });
+        return bt.click(function() {
+          $('body,html').animate({
+            scrollTop: 0
+          },
+          800);
+          return false
+        })
+      }
+    }
+  })(this));</script>
+  </body>
+</html>
+
