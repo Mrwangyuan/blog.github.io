@@ -84,7 +84,7 @@
             <h1>MySQL的事务隔离级别</h1>
             <span class="meta">
             	Posted on
-              2020-04-08，6 min read
+              2020-04-08，7 min read
             </span>
           </div>
         </div>
@@ -221,6 +221,18 @@ A事务在读取数据后的某个时间，重新读取了这条数据，但是�
 </ul>
 <p>按照实际操作来看，在更新的时候没有变成900-50 = 850，而是读取到了事务B已经提交的结果。这样数据一致性的机制没有被破坏。<br>
 这就是MySQL的MVCC机制。在更新的时候刷新快照保证事务的一致性。</p>
+<ul>
+<li>那么MySQL默认的锁是可重复读，那么有办法解决幻读的问题吗？<br>
+对于幻读是已经提交的插入操作，那么在执行一个事务的时候，不允许其他事务操作这个些数据就可以解决，那就是<strong>间隙锁</strong>在一定情况下可以解决幻读的问题，比如：<br>
+<code>update account set name ='wangyuan' where id &gt; 10 and id &lt;=20</code><br>
+执行后，在这个范围下其他事务是无法进行插入、更新操作。</li>
+<li>无索引的行锁会升级为表锁：也就是说锁主要是加载索引列上，如果对非索引字段进行更新则会升级为表锁。<strong>InnoDB的行锁是针对索引加的锁，不是针对记录加的锁。并且该索引不能失效，否则都会从行锁升级为表锁。</strong></li>
+<li>锁定某一行还可以用lock in share mode(共享锁) 和for update(排它锁)。例如：<br>
+<code>select * from test_innodb_lock where a = 2 for update</code>，<br>
+这样其他sessionB只能执行查询，修改会被阻塞直到这个sessionA提交。<br>
+<code>select * from test_innodb_lock where a=20 lock in share mode</code>，<br>
+共享锁和排它锁大致一样，但是因为是共享锁，所以其他事务也可以对这条数据加锁，一旦当前事务需要修改的时候，就会发现他被其他事务锁定也是不能修改的。</li>
+</ul>
 
           
           <p class="next-post">下一篇：
